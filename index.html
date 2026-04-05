@@ -285,10 +285,12 @@
             <div class="tab-pane" id="nav-info" role="tabpanel">
                 <div class="mb-4">要望・バグ報告などは<a href="https://forms.gle/WLJueGioScScPbuz7" target="_blank">こちら</a>から
                 </div>
-                <div class="h5 subhead">リリースノート</div>
+                <!-- <div class="h5 subhead">リリースノート</div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item border-dark-subtle d-flex">2026-04-04&nbsp;サイトをリリースしました。</li>
-                </ul>
+                    <li class="list-group-item border-dark-subtle d-flex">2026-04-05&nbsp;&nbsp;バグを修正し、ボタンの文言を変更しました。
+                    </li>
+                    <li class="list-group-item border-dark-subtle d-flex">2026-04-04&nbsp;&nbsp;サイトをリリースしました。</li>
+                </ul> -->
             </div>
         </div>
     </div>
@@ -297,13 +299,20 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">お気に入りに保存</h5>
+                    <h5 class="modal-title">お気に入りに保存</h5><br>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <label class="form-label font-weight-bold favNote-explain">コマンドの説明を入力</label>
+                    <div class="d-flex justify-content-between">
+                        <p class="fav-explain">※30文字以内</p>
+                        <span id="counterFav" class="text-muted small">0/30</span>
+                    </div>
                     <p class="fav-explain">※お気に入りは15件まで保存できます。</p>
-                    <input type="text" id="favNote" class="form-control" placeholder="例：安いランチ検索用">
+                    <textarea id="favNote" class="form-control" rows="2" placeholder="例：安いランチ検索用"></textarea>
+                    <div id="error-favNote" class="error-text"><i class="fa-solid fa-circle-exclamation"></i>
+                        <span></span>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">キャンセル</button>
@@ -485,10 +494,21 @@
             const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
             if (data.length >= MAX_FAV) return alert(`お気に入りは${MAX_FAV}件までしか登録できません`);
             document.getElementById('favNote').value = "";
+            document.getElementById('counterFav').textContent = "0/30";
             saveModal.show();
         });
 
         document.getElementById('confirmSave').addEventListener('click', () => {
+            clearErrors();
+            let hasError = false;
+            const favNote = document.getElementById('favNote').value;
+            if (favNote.length > 30) {
+                showError('error-favNote', "30文字以内で入力してください");
+                document.getElementById('favNote').classList.add('is-invalid');
+                hasError = true;
+            }
+            if (hasError) return;
+
             const cmd = document.getElementById('commandArea').value;
             const note = document.getElementById('favNote').value.trim() || "説明がありません";
             const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -531,6 +551,11 @@
             document.getElementById(id).addEventListener('input', (e) => {
                 document.getElementById(`counter${idx + 1}`).textContent = `${e.target.value.length}/20`;
             });
+        });
+
+        // お気に入りモーダル用のカウンター
+        document.getElementById('favNote').addEventListener('input', (e) => {
+            document.getElementById('counterFav').textContent = `${e.target.value.length}/30`;
         });
 
         displayFavs();
